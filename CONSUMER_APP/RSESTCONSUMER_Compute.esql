@@ -1,0 +1,60 @@
+
+
+CREATE COMPUTE MODULE RSESTCONSUMER_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Copy the whole message tree to output
+	SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		-- Save the MDMQ for later reply
+		SET Environment.SaveSate.MQMD = InputRoot.MQMD;	
+		--<GETCUSTOMERINFO><CUSTOMERID>1215</CUSTOMERID></GETCUSTOMERINFO>	
+    DECLARE id  CHARACTER;
+	SET id = InputRoot.XMLNSC.GETCUSTOMERINFO.CUSTOMERID;
+    DECLARE url CHARACTER 'http://localhost:7080/employee/data';
+    
+		-- For REST HTTP Method sets the operation
+		-- For this MQ wrapper we use the Input queue name
+		DECLARE restActionQname CHARACTER;
+		  SET restActionQname = InputRoot.MQMD.SourceQueue;
+		  --  Set the REST HTTP method property in local environment based on input queue name
+		CASE restActionQname
+			
+		WHEN 'RETRIEVE_IN1' THEN
+		SET OutputRoot.XMLNSC.GETCUSTOMERINFO.CUSTOMERID = InputRoot.XMLNSC.GETCUSTOMERINFO.CUSTOMERID;
+				SET OutputLocalEnvironment.Destination.HTTP.RequestLine.Method = 'GET';
+				--SET OutputLocalEnvironment.Destination.HTTP.RequestURL =url||'?id='||'1215';
+				 SET OutputLocalEnvironment.Destination.HTTP.RequestURL = url;
+              SET OutputLocalEnvironment.Destination.HTTP.QueryString.custid ='1215';
+                                                  
+		  -- SET OutputLocalEnvironment.Destination.HTTP.RequestURL =url||'?id='||id;
+		   --DECLARE URL CHARACTER MyURL || 'search?q=' || 'hello';
+           --SET OutputLocalEnvironment.Destination.HTTP.RequestURL = URL;
+           WHEN 'DELETE_IN1' THEN
+				SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+				SET OutputLocalEnvironment.Destination.HTTP.RequestLine.Method = 'DELETE';
+				WHEN 'DELETE_IN1' THEN
+				SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+				SET OutputLocalEnvironment.Destination.HTTP.RequestLine.Method = 'DELETE';
+		   
+         	SET Environment.SaveSate.MQMD = InputRoot.MQMD;
+			WHEN 'DELETE_IN1' THEN
+				SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+				SET OutputLocalEnvironment.Destination.HTTP.RequestLine.Method = 'DELETE';
+				SET Environment.SaveSate.MQMD = InputRoot.MQMD;
+				--SET MyURL = 'https://www.google.co.uk/';
+               -- SET OutputLocalEnvironment.Destination.HTTP.RequestURL = MyURL;
+               --SET OutputLocalEnvironment.Destination.HTTP.QueryString.search ='hello';
+                                                                                          
+			
+				
+			--SET OutputLocalEnvironment.Destination.HTTP.RequestURL ='http://localhost:7080/employee/data'||'?titleRef='||titleRef;
+				
+				
+				
+		END CASE;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+
